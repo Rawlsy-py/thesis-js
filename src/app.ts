@@ -1,12 +1,14 @@
-import express, { Request, Response } from 'express';
-import bodyParser from 'body-parser';
-import { Sequelize, Model, DataTypes } from 'sequelize';
+import express, { Request, Response } from "express";
+import bodyParser from "body-parser";
+import { Sequelize, Model, DataTypes } from "sequelize";
 
 const app = express();
 const PORT = 3000;
 
 // Initialize Sequelize
-const sequelize = new Sequelize('postgres://username:password@postgres:5432/database');
+const sequelize = new Sequelize(
+  "postgres://username:password@postgres:5432/database",
+);
 
 // Define the model
 class MyModel extends Model {
@@ -32,37 +34,37 @@ MyModel.init(
   },
   {
     sequelize,
-    tableName: 'my_table',
-  }
+    tableName: "my_table",
+  },
 );
 
 // Middleware
 app.use(bodyParser.json());
 
 // Routes
-app.get('/', async (req: Request, res: Response) => {
+app.get("/", async (req: Request, res: Response) => {
   try {
     const data = await MyModel.findAll({ limit: 10 });
     res.json(data);
   } catch (error) {
-    res.status(500).json({ error: 'Internal server error' });
+    res.status(500).json({ error: "Internal server error" });
   }
 });
 
-app.post('/update-balance/:id', async (req: Request, res: Response) => {
+app.post("/update-balance/:id", async (req: Request, res: Response) => {
   const { id } = req.params;
   const { balance } = req.body;
 
   try {
     const row = await MyModel.findByPk(id);
     if (!row) {
-      return res.status(404).json({ error: 'Row not found' });
+      return res.status(404).json({ error: "Row not found" });
     }
 
     await row.update({ balance });
-    res.json({ message: 'Balance updated successfully' });
+    res.json({ message: "Balance updated successfully" });
   } catch (error) {
-    res.status(500).json({ error: 'Internal server error' });
+    res.status(500).json({ error: "Internal server error" });
   }
 });
 
