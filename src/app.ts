@@ -1,74 +1,95 @@
-import express, { Request, Response } from "express";
-import bodyParser from "body-parser";
-import { Sequelize, Model, DataTypes } from "sequelize";
+import express, { Application, Request, Response } from 'express'
+import cors from 'cors'
+import helmet from 'helmet'
+import compression from 'compression'
+import unknownEndpoint from './middlewares/unknownEndpoint'
+import { PrismaClient } from '@prisma/client'
 
-const app = express();
-const PORT = 3000;
+// to use env variables
+import './common/env'
 
-// Initialize Sequelize
-const sequelize = new Sequelize(
-  "postgres://username:password@postgres:5432/database",
-);
+const app: Application = express()
+const prisma: PrismaClient = new PrismaClient()
 
-// Define the model
-class MyModel extends Model {
-  public id!: number;
-  public country_code!: string;
-  public balance!: number;
-}
-MyModel.init(
-  {
-    id: {
-      type: DataTypes.INTEGER,
-      autoIncrement: true,
-      primaryKey: true,
-    },
-    country_code: {
-      type: DataTypes.STRING,
-      allowNull: false,
-    },
-    balance: {
-      type: DataTypes.FLOAT,
-      allowNull: false,
-    },
-  },
-  {
-    sequelize,
-    tableName: "my_table",
-  },
-);
+// middleware
+app.disable('x-powered-by')
+app.use(cors())
+app.use(helmet())
+app.use(compression())
+app.use(
+  express.urlencoded({
+    extended: true,
+    limit: process.env.REQUEST_LIMIT || '100kb',
+  }),
+)
+app.use(express.json())
 
-// Middleware
-app.use(bodyParser.json());
-
-// Routes
-app.get("/", async (req: Request, res: Response) => {
+// url: /
+// response: {"data": [{"id": 1, "name": "John Doe", "balances": [{"id": 1, "amount": 100.0}]}]}
+app.get('/', async (req: Request, res: Response) => {
   try {
-    const data = await MyModel.findAll({ limit: 10 });
-    res.json(data);
-  } catch (error) {
-    res.status(500).json({ error: "Internal server error" });
-  }
-});
+    // get first 10 users with their balances
+    const data = await prisma.user.findMany({
+      include: {
+        balances: true,
+      },
+      take: 10,
+      skip: 0,
+    })
 
-app.post("/update-balance/:id", async (req: Request, res: Response) => {
-  const { id } = req.params;
-  const { balance } = req.body;
+    // return response
+    return res.json({
+      data: data,
+    })
+  } catch (error) {
+    return res.status(500).json({
+      error: 'Internal server error',
+    })
+  }
+})
+
+// url: /update-balance
+// request body: {"id": 1, "balance": 100.0}
+// response: {"message": "Balance updated successfully", "data": {"id": 1, "amount": 100.0}}
+app.post('/update-balance', async (req: Request, res: Response) => {
+  const { id, balance } = req.body
+
+  if (!id || !balance) {
+    return res.status(400).json({
+      error: 'id and balance are required',
+    })
+  }
 
   try {
-    const row = await MyModel.findByPk(id);
-    if (!row) {
-      return res.status(404).json({ error: "Row not found" });
-    }
+    const newBalance = await prisma.balance.update({
+      where: {
+        id: Number(id),
+      },
+      data: {
+        amount: Number(balance),
+      },
+    })
 
-    await row.update({ balance });
-    res.json({ message: "Balance updated successfully" });
+    return res.json({
+      message: 'Balance updated successfully',
+      data: newBalance,
+    })
   } catch (error) {
-    res.status(500).json({ error: "Internal server error" });
+    return res.status(404).json({
+      error: 'route not found',
+    })
   }
-});
+})
 
-// Start the server
-app.listen(PORT, () => {
-  console.log(`Server is running on http://localhost:${PORT}`);
-});
+// url: /health-check
+// response: {"health-check": "OK: top level api working"}
+app.get('/health-check', async (req: Request, res: Response) => {
+  return res.json({
+    'health-check': 'OK: top level api working',
+  })
+})
+
+// Handle unknown endpoints
+app.use('*', unknownEndpoint)
+
+export default app

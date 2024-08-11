@@ -1,0 +1,30 @@
+services:
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - 3000:3000
+    volumes:
+      - .:/app
+    environment:
+      - NODE_ENV=development
+    depends_on:
+      - db
+    networks:
+      - app-network
+
+  db:
+    image: postgres:16
+    ports:
+      - 5432:5432
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: "thesis-js"
+    networks:
+      - app-network
+
+networks:
+  app-network:
+    driver: bridge
