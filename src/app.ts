@@ -4,6 +4,7 @@ import helmet from 'helmet'
 import compression from 'compression'
 import unknownEndpoint from './middlewares/unknownEndpoint'
 import { PrismaClient } from '@prisma/client'
+import logger from './common/logger'
 
 // to use env variables
 import './common/env'
@@ -42,7 +43,7 @@ app.get('/', async (req: Request, res: Response) => {
       data: data,
     })
   } catch (error) {
-    console.error(error)
+    logger.error(error)
     return res.status(500).json({
       message: 'Internal server error',
     })
