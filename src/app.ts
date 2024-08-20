@@ -43,7 +43,8 @@ app.get('/', async (req: Request, res: Response) => {
     })
   } catch (error) {
     return res.status(500).json({
-      error: 'Internal server error',
+      message: 'Internal server error',
+      error: error,
     })
   }
 })
@@ -56,7 +57,7 @@ app.post('/update-balance', async (req: Request, res: Response) => {
 
   if (!id || !balance) {
     return res.status(400).json({
-      error: 'id and balance are required',
+      message: 'id and balance are required',
     })
   }
 
@@ -76,7 +77,8 @@ app.post('/update-balance', async (req: Request, res: Response) => {
     })
   } catch (error) {
     return res.status(404).json({
-      error: 'route not found',
+      message: 'route not found',
+      error: error,
     })
   }
 })
