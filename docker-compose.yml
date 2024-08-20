@@ -9,5 +9,3 @@ services:
       - type: bind
         source: ${PWD}/.env
         target: /app/.env
-    environment:
-      - NODE_ENV=development
