@@ -8,10 +8,13 @@ WORKDIR /app
 COPY package*.json ./
 
 # Install app dependencies
-RUN npm install
+RUN npm ci
 
 # Copy the rest of the app source code to the working directory
 COPY . .
+
+# Build the app
+RUN npm run build
 
 # Expose the port on which the app will run
 EXPOSE 3000
