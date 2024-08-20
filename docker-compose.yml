@@ -6,6 +6,8 @@ services:
     ports:
       - 3000:3000
     volumes:
-      - "./.env:/app/.env"
+      - type: bind
+        source: ${PWD}/.env
+        target: /app/.env
     environment:
       - NODE_ENV=development
