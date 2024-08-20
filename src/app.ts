@@ -42,9 +42,9 @@ app.get('/', async (req: Request, res: Response) => {
       data: data,
     })
   } catch (error) {
+    console.error(error)
     return res.status(500).json({
       message: 'Internal server error',
-      error: error,
     })
   }
 })
@@ -78,7 +78,6 @@ app.post('/update-balance', async (req: Request, res: Response) => {
   } catch (error) {
     return res.status(404).json({
       message: 'route not found',
-      error: error,
     })
   }
 })
