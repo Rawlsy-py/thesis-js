@@ -29,7 +29,7 @@ app.use(express.json())
 app.get('/', async (req: Request, res: Response) => {
   try {
     // get first 10 users with their balances
-    const data = await prisma.user.findMany({
+    const data = await prisma.users.findMany({
       include: {
         balances: true,
       },
@@ -61,7 +61,7 @@ app.post('/update-balance', async (req: Request, res: Response) => {
   }
 
   try {
-    const newBalance = await prisma.balance.update({
+    const newBalance = await prisma.balances.update({
       where: {
         id: Number(id),
       },
