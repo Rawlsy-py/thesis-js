@@ -5,6 +5,7 @@ import compression from 'compression'
 import unknownEndpoint from './middlewares/unknownEndpoint'
 import { PrismaClient } from '@prisma/client'
 import logger from './common/logger'
+import json from './common/json'
 
 // to use env variables
 import './common/env'
@@ -39,9 +40,11 @@ app.get('/', async (req: Request, res: Response) => {
     })
 
     // return response
-    return res.json({
-      data: data,
-    })
+    return res.send(
+      json({
+        data: data,
+      }),
+    )
   } catch (error) {
     logger.error(error)
     return res.status(500).json({
@@ -72,10 +75,12 @@ app.post('/update-balance', async (req: Request, res: Response) => {
       },
     })
 
-    return res.json({
-      message: 'Balance updated successfully',
-      data: newBalance,
-    })
+    return res.send(
+      json({
+        message: 'Balance updated successfully',
+        data: newBalance,
+      }),
+    )
   } catch (error) {
     return res.status(404).json({
       message: 'route not found',
